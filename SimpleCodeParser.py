@@ -32,6 +32,7 @@ function_argument={}
 default_values = {}
 arg={}
 kwarg={}
+func_call={}
 # Walk through the AST
 for node in ast.walk(tree):
     if isinstance(node, ast.FunctionDef):
@@ -53,10 +54,26 @@ for node in ast.walk(tree):
                 # Match with the last N arguments
                 arg_with_default = arg_names[len(arg_names) - len(defaults) + i]
                 default_pairings[arg_with_default] = value
-
             default_values[node.name] = default_pairings
-        
-        
+    elif isinstance(node,ast.Call):
+        func_name = ""
+        func_args = []
+
+        if isinstance(node.func, ast.Name):
+            func_name = node.func.id
+        elif isinstance(node.func, ast.Attribute):
+            try:
+                func_name = f"{node.func.value.id}.{node.func.attr}"
+            except AttributeError:
+                func_name = f"{node.func.attr}"  # fallback
+
+        for arg in node.args:
+            if isinstance(arg, ast.Name):
+                func_args.append(arg.id)
+            else:
+                func_args.append(ast.dump(arg))  # show raw structure if not simple
+
+        func_call[func_name] = func_args
     elif isinstance(node, (ast.For, ast.While)):
         loop_type = "for-loop" if isinstance(node, ast.For) else "while-loop"
         loops.append((loop_type, node.lineno))
@@ -81,3 +98,4 @@ print(f"📌 Variables Found: {variable_names}")
 print(f"📌 Assigned Variables Found: {assigned_variable_names}")
 print(f"💬 Comments Found: {comments}")
 print(f"📥 Arguments Found:\nPositional Args:{function_argument}\nDefault:{default_values}\n🌟 *args:{arg}\n🚀 **kwargs:{kwarg}")
+print(f"Function Call Found: {func_call}")
