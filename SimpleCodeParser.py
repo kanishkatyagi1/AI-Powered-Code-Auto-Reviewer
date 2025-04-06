@@ -38,7 +38,7 @@ for node in ast.walk(tree):
         function_names.append(node.name)
         arg_names=[arg.arg for arg in node.args.args]
         if node.args.vararg:
-            arg[node.name]={node.args.vararg.arg}
+            arg[node.name]=[node.args.vararg.arg]
         if node.args.kwarg:
             kwarg[node.name]=[node.args.kwarg.arg]
         function_argument[node.name]=arg_names
